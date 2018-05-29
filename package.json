@@ -18,6 +18,7 @@
   "homepage": "https://github.com/DoritoDog/ico-server#readme",
   "dependencies": {
     "dotenv": "^5.0.1",
-    "express": "^4.16.3"
+    "express": "^4.16.3",
+    "socket.io": "^2.1.1"
   }
 }
