@@ -45,6 +45,37 @@ var lastMessages = [];
 function insertMessage(msg) {
 	console.log(msg.name + ': ' + msg.message);
 
-	lastMessages.push(msg);
-	if (lastMessages.length > 10) lastMessages.shift();
+	var values = [[msg.name, msg.profileImage, msg.message]];
+	queryDB('INSERT INTO chat_messages (name, image, content) VALUES ?', [values], (result) => {
+		console.log(result);
+	});
+}
+
+
+function queryDB(sql, args, callback) {
+	var config = {
+		host: process.env.DB_HOST,
+		user: "root",
+		password: process.env.DB_PASSWORD,
+		database: "ico"
+	};
+	
+	var connection = mysql.createConnection(config);
+	connection.connect((err) => {
+		if (err) throw err;
+
+		if (args.length > 0) {
+			connection.query(sql, args, function(err, result) {
+				if (err) throw err;
+				connection.end();
+				callback(result);
+			});
+		} else {
+			connection.query(sql, function(err, result) {
+				if (err) throw err;
+				connection.end();
+				callback(result);
+			});
+		}
+	});
 }
