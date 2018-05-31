@@ -10,7 +10,7 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const mysql = require("mysql");
+const mysql = require('mysql');
 
 // Express routing
 app.get('/', function(req, res) {
@@ -23,12 +23,21 @@ app.listen(process.env.PORT, function() {
 
 // Sends the last 10 chat messages.
 app.get('/chat', function(req, res) {
-	res.setHeader('Access-Control-Allow-Origin', 'http://localhost');
+	res.setHeader('Access-Control-Allow-Origin', '*');
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
 	res.setHeader('Access-Control-Allow-Credentials', true);
 	
-	queryDB('SELECT * FROM chat_messages LIMIT 10', [], (result) => {
+	queryDB('SELECT name, image, content FROM chat_messages LIMIT 10', [], (result) => {
+		for (var i = 0; i < result.length; i++) {
+			var chatMessage = result[i];
+			result[i] = {
+				name: chatMessage.name,
+				profileImage: chatMessage.image,
+				message: chatMessage.content
+			};
+		}
+
 		res.send(result);
 	});
 });
@@ -40,13 +49,18 @@ http.listen(process.env.SOCKET_IO_PORT, function() {
 
 io.on('connection', function(socket) {
 	socket.on('message', function(msg) {
+
 			var values = [[msg.name, msg.profileImage, msg.message]];
-			queryDB('INSERT INTO chat_messages (name, image, content) VALUES ?', [values], (result) => {
+			queryDB('INSERT INTO chat_messages (name, image, content) VALUES ?', [values], (response) => {
+
 				io.emit('message', msg);
+				queryDB('DELETE FROM chat_messages WHERE id = ?', [mysql.insertId]);
 			});
 	});
 });
 
+// Args are automatically escaped.
+// The callback parameter is not required.
 function queryDB(sql, args, callback) {
 	var config = {
 		host: process.env.DB_HOST,
@@ -63,13 +77,15 @@ function queryDB(sql, args, callback) {
 			connection.query(sql, args, function(err, result) {
 				if (err) throw err;
 				connection.end();
-				callback(result);
+
+				if (typeof callback !== 'undefined') callback(result);
 			});
 		} else {
 			connection.query(sql, function(err, result) {
 				if (err) throw err;
 				connection.end();
-				callback(result);
+
+				if (typeof callback !== 'undefined') callback(result);
 			});
 		}
 	});
