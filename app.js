@@ -54,7 +54,7 @@ io.on('connection', function(socket) {
 			queryDB('INSERT INTO chat_messages (name, image, content) VALUES ?', [values], (response) => {
 
 				io.emit('message', msg);
-				queryDB('DELETE FROM chat_messages WHERE id = ?', [mysql.insertId]);
+				queryDB('DELETE FROM chat_messages WHERE id = ?', [response.insertId - 10]);
 			});
 	});
 });
