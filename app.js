@@ -47,15 +47,23 @@ http.listen(process.env.SOCKET_IO_PORT, function() {
 	console.log(`Socket.io is listening on port ${process.env.SOCKET_IO_PORT}.`);
 });
 
-io.on('connection', function(socket) {
-	socket.on('message', function(msg) {
+var clients = 0;
+io.on('connection', (socket) => {
+	clients++;
+	io.emit('update', { clients });
 
+	socket.on('message', (msg) => {
 			var values = [[msg.name, msg.profileImage, msg.message]];
 			queryDB('INSERT INTO chat_messages (name, image, content) VALUES ?', [values], (response) => {
 
 				io.emit('message', msg);
 				queryDB('DELETE FROM chat_messages WHERE id = ?', [response.insertId - 10]);
 			});
+	});
+
+	socket.on('disconnect', function() {
+		clients--;
+		io.emit('update', { clients });
 	});
 });
 
