@@ -44,14 +44,14 @@ app.get('/chat', (req, res) => {
 	});
 });
 
-app.get('/balance', (req, res) => {
+app.post('/balance', (req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
 
 	let balance = ethereum.getBalance(req.body.address);
 	res.send(balance);
 });
 
-app.get('/transaction', (req, res) => {
+app.post('/transaction', (req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
 
 	ethereum.transferTokens(req.body.from, req.body.to, req.body.amount, req.body.privateKey);
