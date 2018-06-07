@@ -51,7 +51,7 @@ app.post('/balance', (req, res) => {
 	res.setHeader('Access-Control-Allow-Credentials', true);
 
 	let balance = ethereum.getBalance(req.body.address);
-	res.send(balance);
+	res.send(balance.toString());
 });
 
 app.post('/transaction', (req, res) => {
@@ -60,7 +60,8 @@ app.post('/transaction', (req, res) => {
 	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
 	res.setHeader('Access-Control-Allow-Credentials', true);
 
-	ethereum.transferTokens(req.body.from, req.body.to, req.body.amount, req.body.privateKey);
+	let hash = ethereum.transferTokens(req.body.from, req.body.to, req.body.amount, req.body.privateKey);
+	res.send(hash);
 });
 
 // socket.io
