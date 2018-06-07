@@ -4,11 +4,12 @@ require('dotenv').load();
 
 const Web3 = require('web3');
 const tx = require('ethereumjs-tx');
+var util = require('ethereumjs-util');
 const lightWallet = require('eth-lightwallet');
 const BigNumber = require('bignumber.js');
 
 const web3 = new Web3(new Web3.providers.HttpProvider("https://kovan.infura.io/MalstqsO7EYyOSLpTUdi"));
-const txutils = lightWallet.txutils;
+const txUtils = lightWallet.txutils;
 
 //#region Contract variables
 const tokenAddress = '0xD255C2475E0091dA738DfFd1650B438b8eb9ce6D';
@@ -329,22 +330,30 @@ function sendRawTx(rawTx, privateKeyString) {
     });
 }
 
+function getAddress(privateKey) {
+	privateKey = privateKey.startsWith('0x') ? privateKey : '0x' + privateKey;
+	var buffer = util.privateToAddress(privateKey);
+	return '0x' + buffer.toString('hex');
+}
+
 module.exports = {
     getBalance: address => {
         let balance = token.balanceOf(address);
         return web3.toDecimal(web3.fromWei(balance, 'ether'));
     },
 
-    transferTokens: (from, to, amount, privateKey) => {
+    transferTokens: (to, amount, privateKey) => {
+        let from = getAddress(privateKey);
+        amount = web3.toWei(amount);
+        
         let options = {
             nonce: web3.toHex(web3.eth.getTransactionCount(from)),
             gasLimit: web3.toHex(800000),
             gasPrice: web3.toHex(20000000000),
             to: tokenAddress
         };
-        amount = web3.toWei(amount);
     
-        let rawTx = txutils.functionTx(tokenABI, 'transfer', [to, amount], options);
+        let rawTx = txUtils.functionTx(tokenABI, 'transfer', [to, amount], options);
         return sendRawTx(rawTx, privateKey);
     },
 };

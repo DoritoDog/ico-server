@@ -60,7 +60,7 @@ app.post('/transaction', (req, res) => {
 	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
 	res.setHeader('Access-Control-Allow-Credentials', true);
 
-	let hash = ethereum.transferTokens(req.body.from, req.body.to, req.body.amount, req.body.privateKey);
+	let hash = ethereum.transferTokens(req.body.to, req.body.amount, req.body.privateKey);
 	res.send(hash);
 });
 
