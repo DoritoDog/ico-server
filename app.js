@@ -46,6 +46,9 @@ app.get('/chat', (req, res) => {
 
 app.post('/balance', (req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+	res.setHeader('Access-Control-Allow-Credentials', true);
 
 	let balance = ethereum.getBalance(req.body.address);
 	res.send(balance);
@@ -53,6 +56,9 @@ app.post('/balance', (req, res) => {
 
 app.post('/transaction', (req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+	res.setHeader('Access-Control-Allow-Credentials', true);
 
 	ethereum.transferTokens(req.body.from, req.body.to, req.body.amount, req.body.privateKey);
 });
