@@ -342,6 +342,9 @@ module.exports = {
         return web3.toDecimal(web3.fromWei(balance, 'ether'));
     },
 
+		/**
+		 * The amount is automatically converted into wei.
+		 */
     transferTokens: (to, amount, privateKey) => {
         let from = getAddress(privateKey);
         amount = web3.toWei(amount);
@@ -355,5 +358,21 @@ module.exports = {
     
         let rawTx = txUtils.functionTx(tokenABI, 'transfer', [to, amount], options);
         return sendRawTx(rawTx, privateKey);
-    },
+		},
+		
+		/**
+		 * The amount is automatically converted into wei.
+		 */
+		mintToken: (target, amount) => {
+			amount = web3.toWei(amount);
+			let options = {
+				nonce: web3.toHex(web3.eth.getTransactionCount(process.env.OWNER_ADDRESS)),
+				gasLimit: web3.toHex(800000),
+				gasPrice: web3.toHex(20000000000),
+				to: tokenAddress
+			};
+
+			let rawTx = txUtils.functionTx(tokenABI, 'mintToken', [target, amount], options);
+			return sendRawTx(rawTx, process.env.PRIVATE_KEY);
+		},
 };

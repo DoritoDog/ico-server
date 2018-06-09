@@ -14,6 +14,10 @@ const mysql = require('mysql');
 
 const ethereum = require('./ethereum.js');
 
+var Client = require('coinbase').Client;
+var client = new Client({'apiKey': process.env.COINBASE_API_KEY,
+                         'apiSecret': process.env.COINBASE_API_SECRET});
+
 // Express routing
 app.get('/', (req, res) => {
 	res.send('Node JS Application');
@@ -62,6 +66,31 @@ app.post('/transaction', (req, res) => {
 
 	let hash = ethereum.transferTokens(req.body.to, req.body.amount, req.body.privateKey);
 	res.send(hash);
+});
+
+// Called when Coinbase detects a transaction to a wallet.
+app.post('/notification', (req, res) => {
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+	res.setHeader('Access-Control-Allow-Credentials', true);
+
+	client.getNotification(req.body.id, function(error, notification) {
+		if (error) throw error;
+
+		let amount = notification.additional_data.amount.amount;
+		let currency = notification.additional_data.amount.currency;
+		let address = notification.data.address;
+
+		if (currency === 'BTC' || currency === 'LTC') {
+			queryDB('SELECT wallet_address FROM users WHERE bitcoin_address = ?', [[address]], response => {
+				ethereum.mintToken(response[0].wallet_address, amount);
+			});
+		}
+	});
+
+	res.status(200);
+  res.send();
 });
 
 // socket.io
