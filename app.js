@@ -68,6 +68,16 @@ app.post('/transaction', (req, res) => {
 	res.send(hash);
 });
 
+app.post('/contribution', (req, res) => {
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+	res.setHeader('Access-Control-Allow-Credentials', true);
+
+	let contribution = ethereum.getContribution(req.body.address);
+	res.send(contribution);
+});
+
 // Called when Coinbase detects a transaction to a wallet.
 app.post('/notification', (req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
