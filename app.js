@@ -75,7 +75,7 @@ app.post('/contribution', (req, res) => {
 	res.setHeader('Access-Control-Allow-Credentials', true);
 
 	let contribution = ethereum.getContribution(req.body.address);
-	res.send(contribution);
+	res.send(contribution.toString());
 });
 
 // Called when Coinbase detects a transaction to a wallet.
