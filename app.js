@@ -29,10 +29,7 @@ app.listen(process.env.PORT, () => {
 
 // Sends the last 10 chat messages.
 app.get('/chat', (req, res) => {
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-	res.setHeader('Access-Control-Allow-Credentials', true);
+	setHeaders(res);
 	
 	queryDB('SELECT name, image, content FROM chat_messages LIMIT 10', [], result => {
 		for (var i = 0; i < result.length; i++) {
@@ -49,30 +46,21 @@ app.get('/chat', (req, res) => {
 });
 
 app.post('/balance', (req, res) => {
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-	res.setHeader('Access-Control-Allow-Credentials', true);
+	setHeaders(res);
 
 	let balance = ethereum.getBalance(req.body.address);
 	res.send(balance.toString());
 });
 
 app.post('/transaction', (req, res) => {
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-	res.setHeader('Access-Control-Allow-Credentials', true);
+	setHeaders(res);
 
 	let hash = ethereum.transferTokens(req.body.to, req.body.amount, req.body.privateKey);
 	res.send(hash);
 });
 
 app.post('/contribution', (req, res) => {
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-	res.setHeader('Access-Control-Allow-Credentials', true);
+	setHeaders(res);
 
 	let contribution = ethereum.getContribution(req.body.address);
 	res.send(contribution.toString());
@@ -80,10 +68,7 @@ app.post('/contribution', (req, res) => {
 
 // Called when Coinbase detects a transaction to a wallet.
 app.post('/notification', (req, res) => {
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-	res.setHeader('Access-Control-Allow-Credentials', true);
+	setHeaders(res);
 
 	client.getNotification(req.body.id, function(error, notification) {
 		if (error) throw error;
@@ -158,4 +143,11 @@ function queryDB(sql, args, callback) {
 			});
 		}
 	});
+}
+
+function setHeaders(res) {
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+	res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+	res.setHeader('Access-Control-Allow-Credentials', true);
 }
