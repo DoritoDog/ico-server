@@ -51,6 +51,18 @@ function getAddress(privateKey) {
 	return '0x' + buffer.toString('hex');
 }
 
+function sendTx(from, contractAddress, abi, functionName, args) {
+	let options = {
+			nonce: web3.toHex(web3.eth.getTransactionCount(from)),
+			gasLimit: web3.toHex(800000),
+			gasPrice: web3.toHex(20000000000),
+			to: contractAddress
+	};
+
+	let rawTx = txUtils.functionTx(abi, functionName, args, options);
+	return sendRawTx(rawTx, privateKey);
+}
+
 module.exports = {
     getBalance: address => {
         let balance = token.balanceOf(address);
@@ -62,17 +74,8 @@ module.exports = {
 		 */
     transferTokens: (to, amount, privateKey) => {
         let from = getAddress(privateKey);
-        amount = web3.toWei(amount);
-        
-        let options = {
-            nonce: web3.toHex(web3.eth.getTransactionCount(from)),
-            gasLimit: web3.toHex(800000),
-            gasPrice: web3.toHex(20000000000),
-            to: tokenAddress
-        };
-    
-        let rawTx = txUtils.functionTx(tokenABI, 'transfer', [to, amount], options);
-        return sendRawTx(rawTx, privateKey);
+				amount = web3.toWei(amount);
+				sendTx(from, tokenAddress, tokenABI, 'transfer', [to, amount]);
 		},
 		
 		/**
@@ -80,15 +83,7 @@ module.exports = {
 		 */
 		mintToken: (target, amount) => {
 			amount = web3.toWei(amount);
-			let options = {
-				nonce: web3.toHex(web3.eth.getTransactionCount(process.env.OWNER_ADDRESS)),
-				gasLimit: web3.toHex(800000),
-				gasPrice: web3.toHex(20000000000),
-				to: tokenAddress
-			};
-
-			let rawTx = txUtils.functionTx(tokenABI, 'mintToken', [target, amount], options);
-			return sendRawTx(rawTx, process.env.PRIVATE_KEY);
+			sendTx(process.env.OWNER_ADDRESS, tokenAddress, tokenABI, 'mintToken', [target, amount]);
 		},
 
 		getContribution: address => {
