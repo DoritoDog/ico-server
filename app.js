@@ -14,6 +14,10 @@ const mysql = require('mysql');
 
 const ethereum = require('./ethereum.js');
 
+const chat = require('./chat.js');
+chat.start(http, process.env.SOCKET_IO_PORT);
+chat.run(io);
+
 var Client = require('coinbase').Client;
 var client = new Client({'apiKey': process.env.COINBASE_API_KEY,
                          'apiSecret': process.env.COINBASE_API_SECRET});
@@ -86,31 +90,6 @@ app.post('/notification', (req, res) => {
 
 	res.status(200);
   res.send();
-});
-
-// socket.io
-http.listen(process.env.SOCKET_IO_PORT, function() {
-	console.log(`Socket.io is listening on port ${process.env.SOCKET_IO_PORT}.`);
-});
-
-var clients = 0;
-io.on('connection', socket => {
-	clients++;
-	io.emit('update', { clients });
-
-	socket.on('message', msg => {
-			var values = [[msg.name, msg.profileImage, msg.message]];
-			queryDB('INSERT INTO chat_messages (name, image, content) VALUES ?', [values], response => {
-
-				io.emit('message', msg);
-				queryDB('DELETE FROM chat_messages WHERE id = ?', [response.insertId - 10]);
-			});
-	});
-
-	socket.on('disconnect', function() {
-		clients--;
-		io.emit('update', { clients });
-	});
 });
 
 // Args are automatically escaped.
