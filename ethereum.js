@@ -2,6 +2,7 @@ var exports = module.exports = {};
 
 require('dotenv').load();
 
+// Dependencies.
 const Web3 = require('web3');
 const tx = require('ethereumjs-tx');
 var util = require('ethereumjs-util');
@@ -9,6 +10,7 @@ const lightWallet = require('eth-lightwallet');
 const BigNumber = require('bignumber.js');
 const fs = require('fs');
 
+// Connect to infura to avoid having to download the entire blockchain.
 const web3 = new Web3(new Web3.providers.HttpProvider("https://kovan.infura.io/MalstqsO7EYyOSLpTUdi"));
 const txUtils = lightWallet.txutils;
 
@@ -22,11 +24,17 @@ var crowdsaleBytecode = fs.readFileSync('./crowdsale_bytecode.txt', 'utf8');
 var crowdsaleABI = JSON.parse(fs.readFileSync('./crowdsale_abi.txt', 'utf8'));
 //#endregion
 
+/**
+ * Users receive tokens when they send ether to the crowdsale contract.
+ * Crowdsale contract: https://kovan.etherscan.io/address/0xab5833a0b481610b3d93b6e80e3fce7a9edba925
+ * Token contract: https://kovan.etherscan.io/address/0xD255C2475E0091dA738DfFd1650B438b8eb9ce6D
+ */
 const tokenDefinition = web3.eth.contract(tokenABI);
 const token = tokenDefinition.at(tokenAddress);
 const crowdsaleDefinition = web3.eth.contract(crowdsaleABI);
 const crowdsale = crowdsaleDefinition.at(crowdsaleAddress);
 
+// Transactions modify the state of the contract, require ETH, and must be signed by a private key.
 function sendRawTx(rawTx, privateKeyString) {
     let privateKey = new Buffer(privateKeyString, 'hex');
     let transaction = new tx(rawTx);
@@ -45,6 +53,7 @@ function sendRawTx(rawTx, privateKeyString) {
     });
 }
 
+// Automatically appends 0x to the beginning if it is not there already.
 function getAddress(privateKey) {
 	privateKey = privateKey.startsWith('0x') ? privateKey : '0x' + privateKey;
 	var buffer = util.privateToAddress(privateKey);
@@ -63,6 +72,7 @@ function sendTx(from, contractAddress, abi, functionName, args) {
 	return sendRawTx(rawTx, privateKey);
 }
 
+// Public interface for interacting with the contract through javascript.
 module.exports = {
     getBalance: address => {
         let balance = token.balanceOf(address);
