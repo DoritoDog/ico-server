@@ -63,7 +63,7 @@ app.post('/contribution', (req, res) => {
 	setHeaders(res);
 
 	let contribution = ethereum.getContribution(req.body.address);
-	res.send(contribution.toString());
+	res.send(contribution);
 });
 
 // Called when Coinbase detects a transaction to a wallet.
