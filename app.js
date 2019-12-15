@@ -1,9 +1,11 @@
+// Requiring initial modules and variables.
 const express = require('express');
 const app = express();
 
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
+// Used for environment variables. Requires a .env file (only available locally due to .gitignore).
 require('dotenv').load();
 
 const bodyParser = require('body-parser');
@@ -13,10 +15,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const mysql = require('mysql');
 
 const ethereum = require('./ethereum.js');
-
-const chat = require('./chat.js');
-chat.start(http, process.env.SOCKET_IO_PORT);
-chat.run(io);
 
 var Client = require('coinbase').Client;
 var client = new Client({'apiKey': process.env.COINBASE_API_KEY,
@@ -31,7 +29,7 @@ app.listen(process.env.PORT, () => {
 	console.log(`App.js is listening on port ${process.env.PORT}.`);
 });
 
-// Sends the last 10 chat messages.
+// Sends the last 10 chat messages. Front end is located at https://https://ico.belgharbi.com/users
 app.get('/chat', (req, res) => {
 	setHeaders(res);
 	
@@ -45,10 +43,12 @@ app.get('/chat', (req, res) => {
 			};
 		}
 
+		// Send the result in json format.
 		res.send(result);
 	});
 });
 
+// HTTP endpoint for users to retreive their crypto token balance.
 app.post('/balance', (req, res) => {
 	setHeaders(res);
 
@@ -56,6 +56,8 @@ app.post('/balance', (req, res) => {
 	res.send(balance.toString());
 });
 
+
+// Send {amount} to address {to} from the address derived from {privateKey}
 app.post('/transaction', (req, res) => {
 	setHeaders(res);
 
@@ -95,6 +97,7 @@ app.post('/notification', (req, res) => {
 // Args are automatically escaped.
 // The callback parameter is not required.
 function queryDB(sql, args, callback) {
+	// config data is pulled from .env file.
 	var config = {
 		host: process.env.DB_HOST,
 		user: "root",
@@ -106,11 +109,13 @@ function queryDB(sql, args, callback) {
 	connection.connect(err => {
 		if (err) throw err;
 
+		// Run the query correctly based on whether it needs args.
 		if (args.length > 0) {
 			connection.query(sql, args, (err, result) => {
 				if (err) throw err;
 				connection.end();
 
+				// Avoid dead ends.
 				if (typeof callback !== 'undefined') callback(result);
 			});
 		} else {
@@ -124,6 +129,7 @@ function queryDB(sql, args, callback) {
 	});
 }
 
+// Allow AJAX to be used on the front-end.
 function setHeaders(res) {
 	res.setHeader('Access-Control-Allow-Origin', '*');
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
